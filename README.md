@@ -1,7 +1,7 @@
 # CatchUp Platform
 
 ## Summary
-This project is a simple REST API that expands the experience of CatchUp application, the News API client app, with the possibility of saving favorite news sources. It is implemented with Java language, Spring Boot Framework, Spring Data JPA, and MySQL database. It also illustrates Domain-Driven Design with tactical patterns.
+This project is a simple REST API that expands the experience of CatchUp application, the News API client app, with the possibility of saving favorite news sources. It is implemented with the Java language, Spring Boot Framework, Spring Data JPA, and MySQL database. It also illustrates Domain-Driven Design with tactical patterns.
 
 ### Reference Documentation
 
