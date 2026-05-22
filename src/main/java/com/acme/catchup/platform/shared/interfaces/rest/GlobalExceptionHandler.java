@@ -58,7 +58,6 @@ public class GlobalExceptionHandler {
     ErrorResponse handleException(IllegalArgumentException exception, Locale locale) {
         String key = exception.getMessage();
         String message = messageSource.getMessage(key, null, key, locale);
-        assert message != null;
         return ErrorResponse.create(exception, HttpStatusCode.valueOf(HttpStatus.BAD_REQUEST.value()), message);
     }
 
