@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 
@@ -37,6 +38,7 @@ public class FavoriteSourceCommandServiceImpl implements FavoriteSourceCommandSe
      *
      */
     @Override
+    @Transactional
     public Optional<FavoriteSource> handle(CreateFavoriteSourceCommand command) {
         // In case the favorite source already exists, Log a localized error message and return empty.
         if (favoriteSourceRepository.existsByNewsApiKeyAndSourceId(command.newsApiKey(), command.sourceId())) {
