@@ -1,5 +1,7 @@
 package com.acme.catchup.platform.news.interfaces.rest.resources;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+
 /**
  * Response resource representing a favorite source.
  *
@@ -8,5 +10,12 @@ package com.acme.catchup.platform.news.interfaces.rest.resources;
  * @param sourceId source identifier marked as favorite
  * @since 1.0
  */
-public record FavoriteSourceResource(Long id, String newsApiKey, String sourceId) {
+@Schema(description = "Response resource representing a favorite source")
+public record FavoriteSourceResource(
+		@Schema(description = "Persistent identifier", example = "1")
+		Long id,
+		@Schema(description = "News API key associated with the favorite source", example = "news-api-key-123")
+		String newsApiKey,
+		@Schema(description = "Source identifier marked as favorite", example = "bbc-news")
+		String sourceId) {
 }

@@ -13,6 +13,9 @@ import com.acme.catchup.platform.news.interfaces.rest.transform.FavoriteSourceRe
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.Parameters;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -79,11 +82,18 @@ public class FavoriteSourcesController {
      */
     @Operation(
             summary = "Create a favorite source",
-            description = "Creates a favorite source with the provided news API key and source ID")
+            description = "Creates a favorite source with the provided news API key and source ID",
+            requestBody = @RequestBody(
+                    required = true,
+                    description = "Favorite source creation request",
+                    content = @Content(schema = @Schema(implementation = CreateFavoriteSourceResource.class))))
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "201", description = "Favorite source created"),
-            @ApiResponse(responseCode = "400", description = "Bad request"),
-            @ApiResponse(responseCode = "409", description = "Conflict - favorite source already exists for the given newsApiKey and sourceId")
+            @ApiResponse(responseCode = "201", description = "Favorite source created",
+                    content = @Content(schema = @Schema(implementation = FavoriteSourceResource.class))),
+            @ApiResponse(responseCode = "400", description = "Bad request",
+                    content = @Content(schema = @Schema(implementation = ProblemDetail.class))),
+            @ApiResponse(responseCode = "409", description = "Conflict - favorite source already exists for the given newsApiKey and sourceId",
+                    content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
     })
     @PostMapping
     public ResponseEntity<?> createFavoriteSource(@Valid @RequestBody CreateFavoriteSourceResource resource) {
@@ -109,7 +119,8 @@ public class FavoriteSourcesController {
             summary = "Get a favorite source by ID",
             description = "Gets a favorite source by the provided ID")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Favorite source found"),
+            @ApiResponse(responseCode = "200", description = "Favorite source found",
+                    content = @Content(schema = @Schema(implementation = FavoriteSourceResource.class))),
             @ApiResponse(responseCode = "404", description = "Favorite source not found")
     })
     @GetMapping("{id}")
@@ -166,16 +177,19 @@ public class FavoriteSourcesController {
             summary = "Get favorite sources with parameters (News API key and optionally Source ID)",
             description = "Gets favorite sources based on the provided parameters")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Favorite source(s) found"),
+            @ApiResponse(responseCode = "200", description = "Favorite source(s) found",
+                    content = @Content(schema = @Schema(oneOf = {FavoriteSourceResource.class, FavoriteSourceResource[].class}))),
             @ApiResponse(responseCode = "404", description = "Favorite source(s) not found"),
-            @ApiResponse(responseCode = "400", description = "Bad request")
+            @ApiResponse(responseCode = "400", description = "Bad request",
+                    content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
     })
     @Parameters({
-            @Parameter(name = "newsApiKey", description = "News API key", required = true),
-            @Parameter(name = "sourceId", description = "Source ID")})
+            @Parameter(name = "newsApiKey", description = "News API key", required = true,
+                    schema = @Schema(maxLength = 256, pattern = "^[A-Za-z0-9._:-]+$")),
+            @Parameter(name = "sourceId", description = "Source ID",
+                    schema = @Schema(maxLength = 256, pattern = "^[A-Za-z0-9._:-]+$"))})
     @GetMapping
     public ResponseEntity<?> getFavoriteSourcesWithParameters(
-            @Parameter(name = "params", hidden = true)
             @RequestParam Map<String, String> params) {
         String newsApiKey = params.get("newsApiKey");
         String sourceId = params.get("sourceId");
