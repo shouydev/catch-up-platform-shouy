@@ -11,22 +11,25 @@
 
 # Step 1: Build the application using Maven
 
-# Use a lightweight OpenJDK 26 base image
-FROM openjdk:26-jdk AS build
+# Use a Maven image with Temurin JDK 26 for builds
+FROM maven:3.9.11-eclipse-temurin-26 AS build
 # Set the active profile for the Spring Boot application
 ENV SPRING_PROFILES_ACTIVE=prod
 # Set the working directory inside the container
 WORKDIR /app
+COPY .mvn .mvn
+COPY mvnw .
 COPY pom.xml .
-RUN mvn dependency:go-offline
+RUN chmod +x mvnw
+RUN ./mvnw dependency:go-offline
 # Copy the Maven project files into the container
 COPY src ./src
 # Build the application
-RUN mvn package -DskipTests
+RUN ./mvnw clean package -DskipTests
 
 # Step 2: Create a runtime image
 # Copy the Spring Boot JAR file into the container
-FROM openjdk:26-jdk AS runtime
+FROM eclipse-temurin:26-jre AS runtime
 WORKDIR /app
 COPY --from=build /app/target/*.jar app.jar
 
