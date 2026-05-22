@@ -43,6 +43,10 @@ public class FavoriteSourceCommandServiceImpl implements FavoriteSourceCommandSe
     @Override
     @Transactional
     public Optional<FavoriteSource> handle(CreateFavoriteSourceCommand command) {
+        if (favoriteSourceRepository.existsByNewsApiKeyAndSourceId(command.newsApiKey(), command.sourceId())) {
+            LOGGER.warn(messageSource.getMessage("favorite.source.error.duplicate", null, LocaleContextHolder.getLocale()));
+            return Optional.empty();
+        }
         try {
             var favoriteSource = new FavoriteSource(command);
             var createdFavoriteSource = favoriteSourceRepository.save(favoriteSource);
