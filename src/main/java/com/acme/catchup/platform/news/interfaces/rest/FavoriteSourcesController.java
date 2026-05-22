@@ -12,10 +12,8 @@ import com.acme.catchup.platform.news.interfaces.rest.transform.CreateFavoriteSo
 import com.acme.catchup.platform.news.interfaces.rest.transform.FavoriteSourceResourceFromEntityAssembler;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.Parameters;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -28,7 +26,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.regex.Pattern;
 
@@ -83,7 +80,7 @@ public class FavoriteSourcesController {
     @Operation(
             summary = "Create a favorite source",
             description = "Creates a favorite source with the provided news API key and source ID",
-            requestBody = @RequestBody(
+            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
                     required = true,
                     description = "Favorite source creation request",
                     content = @Content(schema = @Schema(implementation = CreateFavoriteSourceResource.class))))
@@ -168,7 +165,8 @@ public class FavoriteSourcesController {
      * When both {@code newsApiKey} and {@code sourceId} are provided, a single
      * favorite source is searched. When only {@code newsApiKey} is provided, all
      * matching favorite sources are returned.
-     * @param params query parameters including required {@code newsApiKey} and optional {@code sourceId}
+     * @param newsApiKey required news API key query parameter
+     * @param sourceId optional source identifier query parameter
      * @return a single favorite source, a list of favorite sources, or a bad request problem detail
      * @see FavoriteSourceResource
      * @since 1.0
@@ -183,16 +181,14 @@ public class FavoriteSourcesController {
             @ApiResponse(responseCode = "400", description = "Bad request",
                     content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
     })
-    @Parameters({
-            @Parameter(name = "newsApiKey", description = "News API key", required = true,
-                    schema = @Schema(maxLength = 256, pattern = "^[A-Za-z0-9._:-]+$")),
-            @Parameter(name = "sourceId", description = "Source ID",
-                    schema = @Schema(maxLength = 256, pattern = "^[A-Za-z0-9._:-]+$"))})
     @GetMapping
     public ResponseEntity<?> getFavoriteSourcesWithParameters(
-            @RequestParam Map<String, String> params) {
-        String newsApiKey = params.get("newsApiKey");
-        String sourceId = params.get("sourceId");
+            @Parameter(name = "newsApiKey", description = "News API key", required = true,
+                    schema = @Schema(maxLength = 256, pattern = "^[A-Za-z0-9._:-]+$"))
+            @RequestParam(name = "newsApiKey", required = false) String newsApiKey,
+            @Parameter(name = "sourceId", description = "Source ID",
+                    schema = @Schema(maxLength = 256, pattern = "^[A-Za-z0-9._:-]+$"))
+            @RequestParam(name = "sourceId", required = false) String sourceId) {
         if (newsApiKey != null && isInvalidQueryParam(newsApiKey)) {
             return ResponseEntity.badRequest().body(
                     ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST,
