@@ -1,9 +1,9 @@
 # Dockerfile for catch-up-platform
 # Summary:
-# This Dockerfile builds and run the catch-up-platform application using Maven and OpenJDK 25.
+# This Dockerfile builds and run the catch-up-platform application using Maven and OpenJDK 26.
 # Description:
 # This Dockerfile is designed to build a Spring Boot application using Maven and run it in a lightweight
-# OpenJDK 25 environment. It uses a multi-stage build to keep the final image size small by separating the build
+# OpenJDK 26 environment. It uses a multi-stage build to keep the final image size small by separating the build
 # and runtime environments. It sets the active Spring profile to 'prod' for production use and exposes port 8080,
 # which is the default port for Spring Boot applications.
 # Version: 1.0
@@ -11,8 +11,8 @@
 
 # Step 1: Build the application using Maven
 
-# Use a lightweight OpenJDK 25 base image
-FROM openjdk:25-jdk AS build
+# Use a lightweight OpenJDK 26 base image
+FROM openjdk:26-jdk AS build
 # Set the active profile for the Spring Boot application
 ENV SPRING_PROFILES_ACTIVE=prod
 # Set the working directory inside the container
@@ -26,7 +26,7 @@ RUN mvn package -DskipTests
 
 # Step 2: Create a runtime image
 # Copy the Spring Boot JAR file into the container
-FROM openjdk:25-jdk AS runtime
+FROM openjdk:26-jdk AS runtime
 WORKDIR /app
 COPY --from=build /app/target/*.jar app.jar
 
