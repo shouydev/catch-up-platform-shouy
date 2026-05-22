@@ -85,13 +85,12 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.14.0</version>
                 <configuration>
-                    <source>26</source>
-                    <target>26</target>
+                    <release>26</release>
                     <annotationProcessorPaths>
                         <path>
                             <groupId>org.projectlombok</groupId>
                             <artifactId>lombok</artifactId>
-                            <version>1.18.38</version>
+                            <version>1.18.46</version>
                         </path>
                     </annotationProcessorPaths>
                 </configuration>
