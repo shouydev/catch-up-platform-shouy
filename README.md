@@ -1,4 +1,4 @@
-# Catch-Up Platform (cath-up-platform)
+# Catch-Up Platform (catch-up-platform)
 
 ## Overview
 
@@ -8,7 +8,7 @@ Catch-Up Platform is a small Spring Boot service that provides an API to manage 
 
 - List favorite sources scoped to a News API key
 - Retrieve a favorite source by its identifier
-- Retrieve a favorite source by News API key + source id
+- Retrieve a favorite source by News API key and source id
 - Create (persist) a new favorite source
 - Custom Hibernate naming strategy to convert identifiers to snake_case and plural table names.
 
@@ -19,6 +19,11 @@ Catch-Up Platform is a small Spring Boot service that provides an API to manage 
 - Spring Data JPA (Hibernate)
 - Lombok (compile-time helpers)
 - PlantUML (architecture diagrams in `docs/`)
+
+## Prerequisites
+
+- OpenJDK 26
+- Docker (optional, to run container image)
 
 ## Technical stories
 
@@ -43,8 +48,22 @@ Or build and run the jar:
 java -jar target/*.jar
 ```
 
+## Run with Docker
+
+Build the container image:
+
+```bash
+docker build -t catch-up-platform:local .
+```
+
+Run the container:
+
+```bash
+docker run --rm -p 8080:8080 --name catch-up-platform catch-up-platform:local
+```
+
 ## Notes
 
-- This repository intentionally reflects a focused subset of functionality (favorites management). Delete operations are not currently implemented in the controllers.
+- This repository intentionally reflects a focused subset of functionality (favorite management). Delete operations are not currently implemented in the controllers.
 - For API integration details and acceptance criteria, see `docs/user-stories.md`.
 - For the system class diagram, see `docs/class-diagram.puml`.
