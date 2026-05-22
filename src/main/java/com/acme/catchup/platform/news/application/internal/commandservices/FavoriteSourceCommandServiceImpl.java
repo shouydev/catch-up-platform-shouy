@@ -64,13 +64,13 @@ public class FavoriteSourceCommandServiceImpl implements FavoriteSourceCommandSe
     }
 
     private boolean isDuplicateFavoriteSourceViolation(DataIntegrityViolationException exception) {
-        Throwable cause = exception;
-        while (cause != null) {
-            String message = cause.getMessage();
+        Throwable violationCause = exception;
+        while (violationCause != null) {
+            String message = violationCause.getMessage();
             if (message != null && message.contains(DUPLICATE_FAVORITE_SOURCE_CONSTRAINT)) {
                 return true;
             }
-            cause = cause.getCause();
+            violationCause = violationCause.getCause();
         }
         return false;
     }
