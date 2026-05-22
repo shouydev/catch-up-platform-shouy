@@ -6,7 +6,7 @@ skinparam classAttributeIconSize 0
 package "news" {
 
   package "interfaces.rest" {
-    class FavoriteSourcesController {
+    class FavoriteSourcesController <<inbound-service>> {
       +getFavoriteSourcesWithParameters(params)
       +getFavoriteSourceById(id)
       +createFavoriteSource(resource)
@@ -26,10 +26,10 @@ package "news" {
     }
 
     package "interfaces.rest.transform" {
-      class FavoriteSourceResourceFromEntityAssembler <<assembler>> {
+      class FavoriteSourceResourceFromEntityAssembler <<translator>> {
         +toResourceFromEntity(FavoriteSource) : FavoriteSourceResource
       }
-      class CreateFavoriteSourceCommandFromResourceAssembler <<assembler>> {
+      class CreateFavoriteSourceCommandFromResourceAssembler <<translator>> {
         +toCommandFromResource(CreateFavoriteSourceResource) : CreateFavoriteSourceCommand
       }
     }
@@ -47,13 +47,13 @@ package "news" {
   }
 
   package "application.internal.commandservices" {
-    class FavoriteSourceCommandServiceImpl <<service>> {
+    class FavoriteSourceCommandServiceImpl <<command-handler>> {
       +handle(CreateFavoriteSourceCommand) : Optional<FavoriteSource>
     }
   }
 
   package "application.internal.queryservices" {
-    class FavoriteSourceQueryServiceImpl <<service>> {
+    class FavoriteSourceQueryServiceImpl <<query-handler>> {
       +handle(GetAllFavoriteSourcesByNewsApiKeyQuery) : List<FavoriteSource>
       +handle(GetFavoriteSourceByIdQuery) : Optional<FavoriteSource>
       +handle(GetFavoriteSourceByNewsApiKeyAndSourceIdQuery) : Optional<FavoriteSource>
@@ -61,7 +61,7 @@ package "news" {
   }
 
   package "domain.model.aggregates" {
-    class FavoriteSource {
+    class FavoriteSource <<aggregate-root>> {
       - Long id
       - String newsApiKey
       - String sourceId
@@ -142,11 +142,19 @@ CreateFavoriteSourceCommandFromResourceAssembler --> CreateFavoriteSourceCommand
 
 CreateFavoriteSourceCommand --> FavoriteSource : constructs
 
-' Note about repository placement
+ ' Note about repository placement
 note bottom
+  DDD Architecture Overview:
+  - Inbound Service: REST controller receiving HTTP requests
+  - Translators: Convert between HTTP Resources and domain models
+  - Domain Services: Define contracts for command and query operations
+  - Command Handler: Orchestrates write operations, enforcing invariants
+  - Query Handler: Retrieves domain models for query specifications
+  - Aggregate Root: FavoriteSource enforces unique (newsApiKey, sourceId) invariant
+  - Repository: Provides collection-like access to aggregates in persistence layer
+
   The repository interface is physically implemented as
-  `news.infrastructure.persistence.jpa.FavoriteSourceRepository` in the
-  codebase.
+  `news.infrastructure.persistence.jpa.FavoriteSourceRepository` using Spring Data JPA.
 end note
 
 @enduml
