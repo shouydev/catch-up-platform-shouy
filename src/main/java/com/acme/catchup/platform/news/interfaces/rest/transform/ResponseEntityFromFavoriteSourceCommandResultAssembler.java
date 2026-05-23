@@ -20,7 +20,6 @@ import static org.springframework.http.HttpStatus.CREATED;
  *
  * @since 1.0
  */
-@SuppressWarnings("unused")
 public class ResponseEntityFromFavoriteSourceCommandResultAssembler {
     /**
      * Converts a favorite source command result to a ResponseEntity.
@@ -34,9 +33,19 @@ public class ResponseEntityFromFavoriteSourceCommandResultAssembler {
             MessageSource messageSource) {
         return result.fold(
                 source -> new ResponseEntity<>(FavoriteSourceResourceFromEntityAssembler.toResourceFromEntity(source), CREATED),
-                failure -> ResponseEntity.status(HttpStatus.CONFLICT).body(ProblemDetail.forStatusAndDetail(
-                        HttpStatus.CONFLICT,
-                        localizedMessage(messageSource, failure.messageKey()))));
+                failure -> {
+                    var status = statusFromFailure(failure);
+                    return ResponseEntity.status(status).body(ProblemDetail.forStatusAndDetail(
+                            status,
+                            localizedMessage(messageSource, failure.messageKey())));
+                });
+    }
+
+    private static HttpStatus statusFromFailure(FavoriteSourceCommandFailure failure) {
+        if (failure instanceof FavoriteSourceCommandFailure.Duplicate) {
+            return HttpStatus.CONFLICT;
+        }
+        return HttpStatus.BAD_REQUEST;
     }
 
     private static String localizedMessage(MessageSource messageSource, String messageKey) {
