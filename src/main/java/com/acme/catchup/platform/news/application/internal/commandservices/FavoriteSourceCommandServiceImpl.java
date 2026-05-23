@@ -6,8 +6,7 @@ import com.acme.catchup.platform.news.domain.model.aggregates.FavoriteSource;
 import com.acme.catchup.platform.news.domain.model.commands.CreateFavoriteSourceCommand;
 import com.acme.catchup.platform.news.infrastructure.persistence.jpa.FavoriteSourceRepository;
 import static com.acme.catchup.platform.news.domain.model.aggregates.FavoriteSource.NEWS_API_KEY_SOURCE_ID_UNIQUE_CONSTRAINT;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -27,11 +26,11 @@ import java.util.Objects;
  *
  * @since 1.0
  */
+@Slf4j
 @Service
 public class FavoriteSourceCommandServiceImpl implements FavoriteSourceCommandService {
     private static final String DUPLICATE_FAVORITE_SOURCE_CONSTRAINT = NEWS_API_KEY_SOURCE_ID_UNIQUE_CONSTRAINT;
     private final FavoriteSourceRepository favoriteSourceRepository;
-    private static final Logger LOGGER = LoggerFactory.getLogger(FavoriteSourceCommandServiceImpl.class);
     private final MessageSource messageSource;
 
     public FavoriteSourceCommandServiceImpl(FavoriteSourceRepository favoriteSourceRepository, MessageSource messageSource) {
@@ -47,13 +46,15 @@ public class FavoriteSourceCommandServiceImpl implements FavoriteSourceCommandSe
     @Transactional
     public Result<FavoriteSource, FavoriteSourceCommandFailure> handle(CreateFavoriteSourceCommand command) {
         if (favoriteSourceRepository.existsByNewsApiKeyAndSourceId(command.newsApiKey(), command.sourceId())) {
+            log.warn("Duplicate favorite source detected (pre-check): newsApiKey={}, sourceId={}",
+                    mask(command.newsApiKey().value()), command.sourceId().value());
             return duplicateResult();
         }
         try {
             var favoriteSource = new FavoriteSource(command);
             var createdFavoriteSource = favoriteSourceRepository.save(favoriteSource);
-            LOGGER.info("Favorite source created: newsApiKey={}, sourceId={}, id={}, createdAt={}, updatedAt={}",
-                    command.newsApiKey().value(),
+            log.info("Favorite source created: newsApiKey={}, sourceId={}, id={}, createdAt={}, updatedAt={}",
+                    mask(command.newsApiKey().value()),
                     command.sourceId().value(),
                     createdFavoriteSource.getId(),
                     createdFavoriteSource.getCreatedAt(),
@@ -61,19 +62,34 @@ public class FavoriteSourceCommandServiceImpl implements FavoriteSourceCommandSe
             return Result.success(createdFavoriteSource);
         } catch (DataIntegrityViolationException exception) {
             if (isDuplicateFavoriteSourceViolation(exception)) {
-                // Invariant violation: Duplicate favorite source
+                log.warn("Duplicate favorite source detected (constraint violation): newsApiKey={}, sourceId={}",
+                        mask(command.newsApiKey().value()), command.sourceId().value());
                 return duplicateResult();
             }
+            log.error("Unexpected data integrity violation saving favorite source: newsApiKey={}, sourceId={}",
+                    mask(command.newsApiKey().value()), command.sourceId().value(), exception);
             throw exception;
         }
     }
 
     private Result<FavoriteSource, FavoriteSourceCommandFailure> duplicateResult() {
         var duplicateFailure = new FavoriteSourceCommandFailure.Duplicate();
-        LOGGER.warn(Objects.requireNonNullElse(
+        log.warn(Objects.requireNonNullElse(
                 messageSource.getMessage(duplicateFailure.messageKey(), null, LocaleContextHolder.getLocale()),
                 duplicateFailure.messageKey()));
         return Result.failure(duplicateFailure);
+    }
+
+    /**
+     * Returns a masked representation of a secret value, exposing only the last four characters.
+     * For example {@code "abc123xyz"} becomes {@code "***xyz"}.
+     *
+     * @param value the raw secret string to mask
+     * @return masked string safe for log output
+     */
+    private static String mask(String value) {
+        if (value == null || value.length() <= 4) return "****";
+        return "****" + value.substring(value.length() - 4);
     }
 
     /**

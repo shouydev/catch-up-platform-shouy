@@ -20,6 +20,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.MessageSource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
@@ -44,6 +45,7 @@ import com.acme.catchup.platform.shared.application.result.Result;
  *
  * @since 1.0
  */
+@Slf4j
 @RestController
 @RequestMapping(value = "/api/v1/favorite-sources", produces = APPLICATION_JSON_VALUE)
 @Tag(name = "Favorite Sources", description = "Endpoints for favorite sources")
@@ -97,9 +99,13 @@ public class FavoriteSourcesController {
     })
     @PostMapping
     public ResponseEntity<?> createFavoriteSource(@Valid @RequestBody CreateFavoriteSourceResource resource) {
+        log.debug("POST /api/v1/favorite-sources – newsApiKey={}, sourceId={}",
+                mask(resource.newsApiKey()), resource.sourceId());
         var favoriteSource = favoriteSourceCommandService
                 .handle(CreateFavoriteSourceCommandFromResourceAssembler.toCommandFromResource(resource));
-        return ResponseEntityFromFavoriteSourceCommandResultAssembler.toResponseEntityFromResult(favoriteSource, messageSource);
+        var response = ResponseEntityFromFavoriteSourceCommandResultAssembler.toResponseEntityFromResult(favoriteSource, messageSource);
+        log.debug("POST /api/v1/favorite-sources – response status={}", response.getStatusCode());
+        return response;
     }
 
     /**
@@ -120,7 +126,9 @@ public class FavoriteSourcesController {
     })
     @GetMapping("{id}")
     public ResponseEntity<FavoriteSourceResource> getFavoriteSourceById(@PathVariable Long id) {
+        log.debug("GET /api/v1/favorite-sources/{}", id);
         Optional<FavoriteSource> favoriteSource = favoriteSourceQueryService.handle(new GetFavoriteSourceByIdQuery(id));
+        if (favoriteSource.isEmpty()) log.debug("Favorite source not found for id={}", id);
         return favoriteSource.map(source -> ResponseEntity.ok(FavoriteSourceResourceFromEntityAssembler.toResourceFromEntity(source)))
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
@@ -191,20 +199,25 @@ public class FavoriteSourcesController {
                     schema = @Schema(maxLength = 256, pattern = "^[A-Za-z0-9._:-]+$"))
             @RequestParam(name = "sourceId", required = false) String sourceId) {
         if (newsApiKey != null && isInvalidQueryParam(newsApiKey)) {
+            log.warn("Rejected invalid query param newsApiKey (value omitted for security)");
             return ResponseEntity.badRequest().body(
                     ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST,
                             "Invalid parameter: newsApiKey"));
         }
         if (sourceId != null && isInvalidQueryParam(sourceId)) {
+            log.warn("Rejected invalid query param sourceId={}", sourceId);
             return ResponseEntity.badRequest().body(
                     ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST,
                             "Invalid parameter: sourceId"));
         }
         if (newsApiKey != null && !newsApiKey.isBlank() && sourceId != null && !sourceId.isBlank()) {
+            log.debug("GET /api/v1/favorite-sources?newsApiKey={}&sourceId={}", mask(newsApiKey), sourceId);
             return getFavoriteSourceByNewsApiKeyAndSourceId(newsApiKey, sourceId);
         } else if (newsApiKey != null && !newsApiKey.isBlank()) {
+            log.debug("GET /api/v1/favorite-sources?newsApiKey={}", mask(newsApiKey));
             return getAllFavoriteSourcesByNewsApiKey(newsApiKey);
         } else {
+            log.warn("GET /api/v1/favorite-sources – missing or blank required parameter: newsApiKey");
             return ResponseEntity.badRequest().body(
                     ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST,
                             "Missing or blank required parameter: newsApiKey"));
@@ -219,5 +232,16 @@ public class FavoriteSourcesController {
      */
     private boolean isInvalidQueryParam(String value) {
         return value.isBlank() || value.length() > MAX_QUERY_PARAM_LENGTH || !QUERY_PARAM_PATTERN.matcher(value).matches();
+    }
+
+    /**
+     * Returns a masked representation of a secret value, exposing only the last four characters.
+     *
+     * @param value the raw secret string to mask
+     * @return masked string safe for log output
+     */
+    private static String mask(String value) {
+        if (value == null || value.length() <= 4) return "****";
+        return "****" + value.substring(value.length() - 4);
     }
 }

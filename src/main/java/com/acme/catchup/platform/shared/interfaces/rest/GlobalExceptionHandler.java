@@ -8,6 +8,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.Locale;
 import java.util.Objects;
@@ -24,6 +25,7 @@ import java.util.stream.Collectors;
  *
  * @since 1.0
  */
+@Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
     private final MessageSource messageSource;
@@ -45,6 +47,7 @@ public class GlobalExceptionHandler {
         String fields = exception.getFieldErrors().stream()
                 .map(fieldError -> messageSource.getMessage(fieldError, locale))
                 .collect(Collectors.joining(", "));
+        log.warn("Validation failed: {}", fields);
         return ErrorResponse.create(
                 exception,
                 HttpStatusCode.valueOf(HttpStatus.BAD_REQUEST.value()),
@@ -63,6 +66,7 @@ public class GlobalExceptionHandler {
     ErrorResponse handleException(IllegalArgumentException exception, Locale locale) {
         String messageKey = exception.getMessage() != null ? exception.getMessage() : "errors.found";
         String message = Objects.requireNonNullElse(messageSource.getMessage(messageKey, null, messageKey, locale), messageKey);
+        log.warn("Illegal argument: {}", message);
         return ErrorResponse.create(exception, HttpStatusCode.valueOf(HttpStatus.BAD_REQUEST.value()), message);
     }
 

@@ -6,8 +6,7 @@ import com.acme.catchup.platform.news.domain.model.queries.GetAllFavoriteSources
 import com.acme.catchup.platform.news.domain.model.queries.GetFavoriteSourceByIdQuery;
 import com.acme.catchup.platform.news.domain.model.queries.GetFavoriteSourceByNewsApiKeyAndSourceIdQuery;
 import com.acme.catchup.platform.news.infrastructure.persistence.jpa.FavoriteSourceRepository;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,10 +20,10 @@ import java.util.Optional;
  *
  * @since 1.0
  */
+@Slf4j
 @Service
 @Transactional(readOnly = true)
 public class FavoriteSourceQueryServiceImpl implements FavoriteSourceQueryService {
-    private static final Logger LOGGER = LoggerFactory.getLogger(FavoriteSourceQueryServiceImpl.class);
     private final FavoriteSourceRepository favoriteSourceRepository;
 
     public FavoriteSourceQueryServiceImpl(FavoriteSourceRepository favoriteSourceRepository) {
@@ -36,9 +35,9 @@ public class FavoriteSourceQueryServiceImpl implements FavoriteSourceQueryServic
      */
     @Override
     public List<FavoriteSource> handle(GetAllFavoriteSourcesByNewsApiKeyQuery query) {
-        LOGGER.debug("Querying all favorite sources for newsApiKey={}", query.newsApiKey().value());
+        log.debug("Querying all favorite sources for newsApiKey={}", mask(query.newsApiKey().value()));
         var results = favoriteSourceRepository.findAllByNewsApiKey(query.newsApiKey());
-        LOGGER.debug("Found {} favorite source(s) for newsApiKey={}", results.size(), query.newsApiKey().value());
+        log.debug("Found {} favorite source(s) for newsApiKey={}", results.size(), mask(query.newsApiKey().value()));
         return results;
     }
 
@@ -47,9 +46,9 @@ public class FavoriteSourceQueryServiceImpl implements FavoriteSourceQueryServic
      */
     @Override
     public Optional<FavoriteSource> handle(GetFavoriteSourceByIdQuery query) {
-        LOGGER.debug("Querying favorite source by id={}", query.id());
+        log.debug("Querying favorite source by id={}", query.id());
         var result = favoriteSourceRepository.findById(query.id());
-        if (result.isEmpty()) LOGGER.debug("No favorite source found for id={}", query.id());
+        if (result.isEmpty()) log.debug("No favorite source found for id={}", query.id());
         return result;
     }
 
@@ -58,9 +57,20 @@ public class FavoriteSourceQueryServiceImpl implements FavoriteSourceQueryServic
      */
     @Override
     public Optional<FavoriteSource> handle(GetFavoriteSourceByNewsApiKeyAndSourceIdQuery query) {
-        LOGGER.debug("Querying favorite source by newsApiKey={}, sourceId={}", query.newsApiKey().value(), query.sourceId().value());
+        log.debug("Querying favorite source by newsApiKey={}, sourceId={}", mask(query.newsApiKey().value()), query.sourceId().value());
         var result = favoriteSourceRepository.findByNewsApiKeyAndSourceId(query.newsApiKey(), query.sourceId());
-        if (result.isEmpty()) LOGGER.debug("No favorite source found for newsApiKey={}, sourceId={}", query.newsApiKey().value(), query.sourceId().value());
+        if (result.isEmpty()) log.debug("No favorite source found for newsApiKey={}, sourceId={}", mask(query.newsApiKey().value()), query.sourceId().value());
         return result;
+    }
+
+    /**
+     * Returns a masked representation of a secret value, exposing only the last four characters.
+     *
+     * @param value the raw secret string to mask
+     * @return masked string safe for log output
+     */
+    private static String mask(String value) {
+        if (value == null || value.length() <= 4) return "****";
+        return "****" + value.substring(value.length() - 4);
     }
 }
