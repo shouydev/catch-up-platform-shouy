@@ -7,15 +7,11 @@ import com.acme.catchup.platform.news.domain.model.commands.CreateFavoriteSource
 import com.acme.catchup.platform.news.infrastructure.persistence.jpa.FavoriteSourceRepository;
 import static com.acme.catchup.platform.news.domain.model.aggregates.FavoriteSource.NEWS_API_KEY_SOURCE_ID_UNIQUE_CONSTRAINT;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.MessageSource;
-import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.acme.catchup.platform.shared.application.result.Result;
-
-import java.util.Objects;
 
 /**
  * Application service for favorite source command operations.
@@ -31,11 +27,9 @@ import java.util.Objects;
 public class FavoriteSourceCommandServiceImpl implements FavoriteSourceCommandService {
     private static final String DUPLICATE_FAVORITE_SOURCE_CONSTRAINT = NEWS_API_KEY_SOURCE_ID_UNIQUE_CONSTRAINT;
     private final FavoriteSourceRepository favoriteSourceRepository;
-    private final MessageSource messageSource;
 
-    public FavoriteSourceCommandServiceImpl(FavoriteSourceRepository favoriteSourceRepository, MessageSource messageSource) {
+    public FavoriteSourceCommandServiceImpl(FavoriteSourceRepository favoriteSourceRepository) {
         this.favoriteSourceRepository = favoriteSourceRepository;
-        this.messageSource = messageSource;
     }
 
     /**
@@ -73,11 +67,7 @@ public class FavoriteSourceCommandServiceImpl implements FavoriteSourceCommandSe
     }
 
     private Result<FavoriteSource, FavoriteSourceCommandFailure> duplicateResult() {
-        var duplicateFailure = new FavoriteSourceCommandFailure.Duplicate();
-        log.warn(Objects.requireNonNullElse(
-                messageSource.getMessage(duplicateFailure.messageKey(), null, LocaleContextHolder.getLocale()),
-                duplicateFailure.messageKey()));
-        return Result.failure(duplicateFailure);
+        return Result.failure(new FavoriteSourceCommandFailure.Duplicate());
     }
 
     /**

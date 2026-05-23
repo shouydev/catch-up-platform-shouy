@@ -10,7 +10,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.context.MessageSource;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
@@ -26,12 +25,9 @@ class FavoriteSourceCommandServiceImplTest {
     @Mock
     private FavoriteSourceRepository favoriteSourceRepository;
 
-    @Mock
-    private MessageSource messageSource;
-
     @Test
     void returnsFailureWhenFavoriteSourceAlreadyExists() {
-        var service = new FavoriteSourceCommandServiceImpl(favoriteSourceRepository, messageSource);
+        var service = new FavoriteSourceCommandServiceImpl(favoriteSourceRepository);
         var newsApiKey = new NewsApiKey("news-api-key");
         var sourceId = new SourceId("source-id");
         var command = new CreateFavoriteSourceCommand(newsApiKey, sourceId);
@@ -47,7 +43,7 @@ class FavoriteSourceCommandServiceImplTest {
 
     @Test
     void returnsSuccessWhenFavoriteSourceIsCreated() {
-        var service = new FavoriteSourceCommandServiceImpl(favoriteSourceRepository, messageSource);
+        var service = new FavoriteSourceCommandServiceImpl(favoriteSourceRepository);
         var newsApiKey = new NewsApiKey("news-api-key");
         var sourceId = new SourceId("source-id");
         var command = new CreateFavoriteSourceCommand(newsApiKey, sourceId);

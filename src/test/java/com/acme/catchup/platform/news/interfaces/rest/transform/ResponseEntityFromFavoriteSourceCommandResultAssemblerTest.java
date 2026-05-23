@@ -61,7 +61,7 @@ class ResponseEntityFromFavoriteSourceCommandResultAssemblerTest {
 
     @Test
     void convertsDuplicateFailureToConflictProblemDetailResponseEntity() {
-        when(messageSource.getMessage(eq("favorite.source.error.duplicate"), any(), eq(Locale.ENGLISH)))
+        when(messageSource.getMessage(eq("favorite.source.error.duplicate"), any(), eq("favorite.source.error.duplicate"), eq(Locale.ENGLISH)))
                 .thenReturn("Favorite source already exists");
 
         ResponseEntity<?> response = ResponseEntityFromFavoriteSourceCommandResultAssembler.toResponseEntityFromResult(
