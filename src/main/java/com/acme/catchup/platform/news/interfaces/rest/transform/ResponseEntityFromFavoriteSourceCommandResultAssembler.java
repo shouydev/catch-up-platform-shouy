@@ -9,8 +9,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
 
-import java.util.Objects;
-
 import static org.springframework.http.HttpStatus.CREATED;
 
 /**
@@ -49,9 +47,7 @@ public class ResponseEntityFromFavoriteSourceCommandResultAssembler {
     }
 
     private static String localizedMessage(MessageSource messageSource, String messageKey) {
-        return Objects.requireNonNullElse(
-                messageSource.getMessage(messageKey, null, LocaleContextHolder.getLocale()),
-                messageKey);
+        return messageSource.getMessage(messageKey, null, messageKey, LocaleContextHolder.getLocale());
     }
 }
 
