@@ -3,6 +3,8 @@ package com.acme.catchup.platform.news.interfaces.rest.transform;
 import com.acme.catchup.platform.news.application.commandservices.FavoriteSourceCommandFailure;
 import com.acme.catchup.platform.news.domain.model.aggregates.FavoriteSource;
 import com.acme.catchup.platform.news.domain.model.commands.CreateFavoriteSourceCommand;
+import com.acme.catchup.platform.news.domain.model.valueobjects.NewsApiKey;
+import com.acme.catchup.platform.news.domain.model.valueobjects.SourceId;
 import com.acme.catchup.platform.news.interfaces.rest.resources.FavoriteSourceResource;
 import com.acme.catchup.platform.shared.application.result.Result;
 import org.junit.jupiter.api.AfterEach;
@@ -43,7 +45,7 @@ class ResponseEntityFromFavoriteSourceCommandResultAssemblerTest {
 
     @Test
     void convertsSuccessResultToCreatedResponseEntity() {
-        var command = new CreateFavoriteSourceCommand("news-api-key", "source-id");
+        var command = new CreateFavoriteSourceCommand(new NewsApiKey("news-api-key"), new SourceId("source-id"));
         var favoriteSource = new FavoriteSource(command);
 
         ResponseEntity<?> response = ResponseEntityFromFavoriteSourceCommandResultAssembler.toResponseEntityFromResult(

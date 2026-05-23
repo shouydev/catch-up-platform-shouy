@@ -1,6 +1,8 @@
 package com.acme.catchup.platform.news.infrastructure.persistence.jpa;
 
 import com.acme.catchup.platform.news.domain.model.aggregates.FavoriteSource;
+import com.acme.catchup.platform.news.domain.model.valueobjects.NewsApiKey;
+import com.acme.catchup.platform.news.domain.model.valueobjects.SourceId;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -24,7 +26,7 @@ public interface FavoriteSourceRepository extends JpaRepository<FavoriteSource, 
      * @param newsApiKey News API key
      * @return List of favorite sources
      */
-    List<FavoriteSource> findAllByNewsApiKey(String newsApiKey);
+    List<FavoriteSource> findAllByNewsApiKey(NewsApiKey newsApiKey);
 
     /**
      * Check if a favorite source exists by news API key and source ID.
@@ -32,7 +34,7 @@ public interface FavoriteSourceRepository extends JpaRepository<FavoriteSource, 
      * @param sourceId Source ID
      * @return True if exists, false otherwise
      */
-    boolean existsByNewsApiKeyAndSourceId(String newsApiKey, String sourceId);
+    boolean existsByNewsApiKeyAndSourceId(NewsApiKey newsApiKey, SourceId sourceId);
 
     /**
      * Find a favorite source by news API key and source ID.
@@ -40,5 +42,5 @@ public interface FavoriteSourceRepository extends JpaRepository<FavoriteSource, 
      * @param sourceId Source ID
      * @return Favorite source
      */
-    Optional<FavoriteSource> findByNewsApiKeyAndSourceId(String newsApiKey, String sourceId);
+    Optional<FavoriteSource> findByNewsApiKeyAndSourceId(NewsApiKey newsApiKey, SourceId sourceId);
 }

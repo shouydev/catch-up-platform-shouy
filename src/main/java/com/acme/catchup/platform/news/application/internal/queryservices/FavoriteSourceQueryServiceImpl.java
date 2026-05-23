@@ -36,9 +36,9 @@ public class FavoriteSourceQueryServiceImpl implements FavoriteSourceQueryServic
      */
     @Override
     public List<FavoriteSource> handle(GetAllFavoriteSourcesByNewsApiKeyQuery query) {
-        LOGGER.debug("Querying all favorite sources for newsApiKey={}", query.newsApiKey());
+        LOGGER.debug("Querying all favorite sources for newsApiKey={}", query.newsApiKey().value());
         var results = favoriteSourceRepository.findAllByNewsApiKey(query.newsApiKey());
-        LOGGER.debug("Found {} favorite source(s) for newsApiKey={}", results.size(), query.newsApiKey());
+        LOGGER.debug("Found {} favorite source(s) for newsApiKey={}", results.size(), query.newsApiKey().value());
         return results;
     }
 
@@ -58,9 +58,9 @@ public class FavoriteSourceQueryServiceImpl implements FavoriteSourceQueryServic
      */
     @Override
     public Optional<FavoriteSource> handle(GetFavoriteSourceByNewsApiKeyAndSourceIdQuery query) {
-        LOGGER.debug("Querying favorite source by newsApiKey={}, sourceId={}", query.newsApiKey(), query.sourceId());
+        LOGGER.debug("Querying favorite source by newsApiKey={}, sourceId={}", query.newsApiKey().value(), query.sourceId().value());
         var result = favoriteSourceRepository.findByNewsApiKeyAndSourceId(query.newsApiKey(), query.sourceId());
-        if (result.isEmpty()) LOGGER.debug("No favorite source found for newsApiKey={}, sourceId={}", query.newsApiKey(), query.sourceId());
+        if (result.isEmpty()) LOGGER.debug("No favorite source found for newsApiKey={}, sourceId={}", query.newsApiKey().value(), query.sourceId().value());
         return result;
     }
 }

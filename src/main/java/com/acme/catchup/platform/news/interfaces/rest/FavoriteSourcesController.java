@@ -10,6 +10,7 @@ import com.acme.catchup.platform.news.interfaces.rest.resources.CreateFavoriteSo
 import com.acme.catchup.platform.news.interfaces.rest.resources.FavoriteSourceResource;
 import com.acme.catchup.platform.news.interfaces.rest.transform.CreateFavoriteSourceCommandFromResourceAssembler;
 import com.acme.catchup.platform.news.interfaces.rest.transform.FavoriteSourceResourceFromEntityAssembler;
+import com.acme.catchup.platform.news.interfaces.rest.transform.NewsValueObjectFromStringAssembler;
 import com.acme.catchup.platform.news.interfaces.rest.transform.ResponseEntityFromFavoriteSourceCommandResultAssembler;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -133,7 +134,8 @@ public class FavoriteSourcesController {
      * @since 1.0
      */
     private ResponseEntity<List<FavoriteSourceResource>> getAllFavoriteSourcesByNewsApiKey(String newsApiKey) {
-        var getAllFavoriteSourcesByNewsApiKeyQuery = new GetAllFavoriteSourcesByNewsApiKeyQuery(newsApiKey);
+        var getAllFavoriteSourcesByNewsApiKeyQuery = new GetAllFavoriteSourcesByNewsApiKeyQuery(
+                NewsValueObjectFromStringAssembler.toNewsApiKeyFromString(newsApiKey));
         var favoriteSources = favoriteSourceQueryService.handle(getAllFavoriteSourcesByNewsApiKeyQuery);
         var favoriteSourceResources = favoriteSources.stream()
                 .map(FavoriteSourceResourceFromEntityAssembler::toResourceFromEntity)
@@ -151,7 +153,9 @@ public class FavoriteSourcesController {
      * @since 1.0
      */
     private ResponseEntity<FavoriteSourceResource> getFavoriteSourceByNewsApiKeyAndSourceId(String newsApiKey, String sourceId) {
-        var getFavoriteSourceByNewsApiKeyAndSourceIdQuery = new GetFavoriteSourceByNewsApiKeyAndSourceIdQuery(newsApiKey, sourceId);
+        var getFavoriteSourceByNewsApiKeyAndSourceIdQuery = new GetFavoriteSourceByNewsApiKeyAndSourceIdQuery(
+                NewsValueObjectFromStringAssembler.toNewsApiKeyFromString(newsApiKey),
+                NewsValueObjectFromStringAssembler.toSourceIdFromString(sourceId));
         var favoriteSource = favoriteSourceQueryService.handle(getFavoriteSourceByNewsApiKeyAndSourceIdQuery);
         return favoriteSource.map(source -> ResponseEntity.ok(FavoriteSourceResourceFromEntityAssembler.toResourceFromEntity(source)))
                 .orElseGet(() -> ResponseEntity.notFound().build());

@@ -1,21 +1,24 @@
 package com.acme.catchup.platform.news.domain.model.commands;
 
+import com.acme.catchup.platform.news.domain.model.valueobjects.NewsApiKey;
+import com.acme.catchup.platform.news.domain.model.valueobjects.SourceId;
+
 /**
  * Command for creating a favorite news source.
  *
- * @param newsApiKey the News API key — must not be null or blank
- * @param sourceId   the news source identifier — must not be null or blank
+ * @param newsApiKey news API key value object
+ * @param sourceId   source identifier value object
  */
-public record CreateFavoriteSourceCommand(String newsApiKey, String sourceId) {
+public record CreateFavoriteSourceCommand(NewsApiKey newsApiKey, SourceId sourceId) {
     /**
      * Validates the command.
-     * @throws IllegalArgumentException If newsApiKey or source ID is null or empty
+     * @throws IllegalArgumentException If newsApiKey or source ID is null
      */
     public CreateFavoriteSourceCommand {
-        if (newsApiKey == null || newsApiKey.isBlank())
-            throw new IllegalArgumentException("newsApiKey cannot be null or empty");
-        if (sourceId == null || sourceId.isBlank())
-            throw new IllegalArgumentException("sourceId cannot be null or empty");
+        if (newsApiKey == null)
+            throw new IllegalArgumentException("newsApiKey cannot be null");
+        if (sourceId == null)
+            throw new IllegalArgumentException("sourceId cannot be null");
     }
 
 }

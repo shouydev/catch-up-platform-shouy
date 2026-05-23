@@ -53,8 +53,8 @@ public class FavoriteSourceCommandServiceImpl implements FavoriteSourceCommandSe
             var favoriteSource = new FavoriteSource(command);
             var createdFavoriteSource = favoriteSourceRepository.save(favoriteSource);
             LOGGER.info("Favorite source created: newsApiKey={}, sourceId={}, id={}, createdAt={}, updatedAt={}",
-                    command.newsApiKey(),
-                    command.sourceId(),
+                    command.newsApiKey().value(),
+                    command.sourceId().value(),
                     createdFavoriteSource.getId(),
                     createdFavoriteSource.getCreatedAt(),
                     createdFavoriteSource.getUpdatedAt());
@@ -87,9 +87,7 @@ public class FavoriteSourceCommandServiceImpl implements FavoriteSourceCommandSe
         Throwable violationCause = exception;
         while (violationCause != null) {
             String message = violationCause.getMessage();
-            if (message != null && message.contains(DUPLICATE_FAVORITE_SOURCE_CONSTRAINT)) {
-                return true;
-            }
+            if (message != null && message.contains(DUPLICATE_FAVORITE_SOURCE_CONSTRAINT)) return true;
             violationCause = violationCause.getCause();
         }
         return false;

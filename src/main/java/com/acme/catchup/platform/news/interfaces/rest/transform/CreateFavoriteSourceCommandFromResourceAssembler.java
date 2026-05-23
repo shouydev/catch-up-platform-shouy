@@ -18,6 +18,8 @@ public class CreateFavoriteSourceCommandFromResourceAssembler {
      * @return CreateFavoriteSourceCommand created from the resource
      */
     public static CreateFavoriteSourceCommand toCommandFromResource(CreateFavoriteSourceResource resource) {
-        return new CreateFavoriteSourceCommand(resource.newsApiKey(), resource.sourceId());
+        return new CreateFavoriteSourceCommand(
+                NewsValueObjectFromStringAssembler.toNewsApiKeyFromString(resource.newsApiKey()),
+                NewsValueObjectFromStringAssembler.toSourceIdFromString(resource.sourceId()));
     }
 }
