@@ -15,7 +15,7 @@ This service is designed to work with [NewsAPI.org](https://newsapi.org/):
 - Retrieve a favorite source by its identifier
 - Retrieve a favorite source by News API key and source id
 - Create (persist) a new favorite source
-- Map command outcomes to HTTP responses through an interface-layer response translator
+- Map command and query outcomes to HTTP responses through interface-layer response translators
 - Custom Hibernate naming strategy to convert identifiers to snake_case and plural table names
 
 ## Technologies
@@ -74,6 +74,7 @@ A PlantUML class diagram that reflects the code structure and bounded contexts i
 - `news.application.internal.commandservices` and `news.application.internal.queryservices` contain the implementations
 - `shared.application.result.Result` models command outcomes without introducing HTTP or domain concepts
 - `news.interfaces.rest.transform.ResponseEntityFromFavoriteSourceCommandResultAssembler` maps command results to `ResponseEntity` values for the REST boundary
+- `news.interfaces.rest.transform.ResponseEntityFromFavoriteSourceQueryResultAssembler` maps query results and localized query errors to `ResponseEntity` values for the REST boundary
 
 ## API documentation (Swagger UI)
 

@@ -39,6 +39,12 @@ package "news" {
       class ResponseEntityFromFavoriteSourceCommandResultAssembler <<translator>> {
         +toResponseEntityFromResult(Result<FavoriteSource, FavoriteSourceCommandFailure>, MessageSource) : ResponseEntity
       }
+      class ResponseEntityFromFavoriteSourceQueryResultAssembler <<translator>> {
+        +toResponseEntityFromFavoriteSource(FavoriteSource) : ResponseEntity
+        +toResponseEntityFromList(List<FavoriteSource>) : ResponseEntity
+        +badRequest(MessageSource, String, Object...) : ResponseEntity
+        +notFound(MessageSource, String, Object...) : ResponseEntity
+      }
     }
   }
 
@@ -165,6 +171,7 @@ FavoriteSourcesController --> FavoriteSourceResourceFromEntityAssembler : uses
 FavoriteSourcesController --> CreateFavoriteSourceCommandFromResourceAssembler : uses
 FavoriteSourcesController --> NewsValueObjectFromStringAssembler : uses
 FavoriteSourcesController --> ResponseEntityFromFavoriteSourceCommandResultAssembler : uses
+FavoriteSourcesController --> ResponseEntityFromFavoriteSourceQueryResultAssembler : uses
 
 FavoriteSourceCommandServiceImpl ..|> FavoriteSourceCommandService : implements
 FavoriteSourceQueryServiceImpl ..|> FavoriteSourceQueryService : implements
@@ -178,6 +185,8 @@ FavoriteSourceCommandServiceImpl --> Result : returns
 FavoriteSourceCommandServiceImpl --> FavoriteSourceCommandFailure : returns
 ResponseEntityFromFavoriteSourceCommandResultAssembler --> Result : consumes
 ResponseEntityFromFavoriteSourceCommandResultAssembler --> FavoriteSourceCommandFailure : consumes
+ResponseEntityFromFavoriteSourceQueryResultAssembler ..> FavoriteSource : reads
+ResponseEntityFromFavoriteSourceQueryResultAssembler --> FavoriteSourceResourceFromEntityAssembler : uses
 
 FavoriteSourceRepository --> FavoriteSource : manages
 
@@ -206,7 +215,7 @@ note bottom
   - Translators: Convert between HTTP Resources and domain models across layer boundaries
   - Application Contracts: Define command and query service interfaces in the application layer
   - Application Services: Orchestrate command and query handling; each handle() method acts as a command or query handler
-  - Response Translator: Converts Result values into HTTP ResponseEntity responses
+  - Response Translators: Convert command and query outcomes into HTTP ResponseEntity responses
   - Aggregate Root: FavoriteSource enforces unique (newsApiKey, sourceId) invariant
   - Repository: Provides collection-like access to aggregates in persistence layer
 
