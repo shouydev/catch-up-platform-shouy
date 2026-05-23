@@ -123,15 +123,19 @@ public class FavoriteSourcesController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Favorite source found",
                     content = @Content(schema = @Schema(implementation = FavoriteSourceResource.class))),
-            @ApiResponse(responseCode = "404", description = "Favorite source not found")
+            @ApiResponse(responseCode = "404", description = "Favorite source not found",
+                    content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
     })
     @GetMapping("{id}")
-    public ResponseEntity<FavoriteSourceResource> getFavoriteSourceById(@PathVariable Long id) {
+    public ResponseEntity<?> getFavoriteSourceById(@PathVariable Long id) {
         log.debug("GET /api/v1/favorite-sources/{}", id);
         Optional<FavoriteSource> favoriteSource = favoriteSourceQueryService.handle(new GetFavoriteSourceByIdQuery(id));
-        if (favoriteSource.isEmpty()) log.debug("Favorite source not found for id={}", id);
+        if (favoriteSource.isEmpty()) {
+            log.debug("Favorite source not found for id={}", id);
+            return notFound("favorite.source.error.notFoundById", id);
+        }
         return favoriteSource.map(source -> ResponseEntity.ok(FavoriteSourceResourceFromEntityAssembler.toResourceFromEntity(source)))
-                .orElseGet(() -> ResponseEntity.notFound().build());
+                .orElseThrow();
     }
 
     /**
@@ -161,13 +165,17 @@ public class FavoriteSourcesController {
      * @see FavoriteSourceResource
      * @since 1.0
      */
-    private ResponseEntity<FavoriteSourceResource> getFavoriteSourceByNewsApiKeyAndSourceId(String newsApiKey, String sourceId) {
+    private ResponseEntity<?> getFavoriteSourceByNewsApiKeyAndSourceId(String newsApiKey, String sourceId) {
         var getFavoriteSourceByNewsApiKeyAndSourceIdQuery = new GetFavoriteSourceByNewsApiKeyAndSourceIdQuery(
                 NewsValueObjectFromStringAssembler.toNewsApiKeyFromString(newsApiKey),
                 NewsValueObjectFromStringAssembler.toSourceIdFromString(sourceId));
         var favoriteSource = favoriteSourceQueryService.handle(getFavoriteSourceByNewsApiKeyAndSourceIdQuery);
+        if (favoriteSource.isEmpty()) {
+            log.debug("Favorite source not found for newsApiKey={}, sourceId={}", mask(newsApiKey), sourceId);
+            return notFound("favorite.source.error.notFoundByNewsApiKeyAndSourceId");
+        }
         return favoriteSource.map(source -> ResponseEntity.ok(FavoriteSourceResourceFromEntityAssembler.toResourceFromEntity(source)))
-                .orElseGet(() -> ResponseEntity.notFound().build());
+                .orElseThrow();
     }
 
     /**
@@ -187,7 +195,8 @@ public class FavoriteSourcesController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Favorite source(s) found",
                     content = @Content(schema = @Schema(oneOf = {FavoriteSourceResource.class, FavoriteSourceResource[].class}))),
-            @ApiResponse(responseCode = "404", description = "Favorite source(s) not found"),
+            @ApiResponse(responseCode = "404", description = "Favorite source(s) not found",
+                    content = @Content(schema = @Schema(implementation = ProblemDetail.class))),
             @ApiResponse(responseCode = "400", description = "Bad request",
                     content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
     })
@@ -234,6 +243,19 @@ public class FavoriteSourcesController {
      */
     private String localizedMessage(String key) {
         return messageSource.getMessage(key, null, key, LocaleContextHolder.getLocale());
+    }
+
+    /**
+     * Builds a localized 404-response body for not-found scenarios.
+     *
+     * @param key message key to resolve
+     * @param args optional arguments for message formatting
+     * @return response entity containing localized {@link ProblemDetail}
+     */
+    private ResponseEntity<ProblemDetail> notFound(String key, Object... args) {
+        var detail = messageSource.getMessage(key, args, key, LocaleContextHolder.getLocale());
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, detail));
     }
 
     /**
