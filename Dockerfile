@@ -13,6 +13,7 @@
 
 # Use a Maven image with Temurin JDK 26 for builds
 FROM maven:3.9.16-eclipse-temurin-26 AS build
+
 # Set the working directory inside the container
 WORKDIR /app
 COPY .mvn .mvn
